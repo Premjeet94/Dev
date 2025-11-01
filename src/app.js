@@ -1,34 +1,47 @@
 const express = require("express");
-require("./config/db")
+const connectDb = require("./config/db");
 const app = express();
-const { adminAuth, userAuth } = require("./middlewares/auth");
+const User = require("./models/user");
+app.use(express.json());
 
-
-app.use("/", (err,req,res,next) => {
-    if (err) {
-        // log your error message
-        res.status(500).send("Something went wrong");
+app.post("/signup", async (req, res) => {
+  // creating a new instance for a user model
+  const user = new User(req.body);
+    try {
+      await user.save();
+      res.send("Data saved successfully");
+    } catch (err) {
+      res.status(400).send("Error in signup user:" + err.message);
     }
-})
-app.use("/admin", adminAuth);
-
-app.post("/user/login", (req,res) => {
-    res.send("user logged in successfully")
 });
 
-app.get("/user/data", userAuth, (req,res) => {
-    res.send("User data sent");
-});
+// Feed API - GET /feed - get all the users from the database
 
-app.get("/admin/getdata", (req,res) => {
-    res.send("All data sent");
-})
+  // creating a new instance for a user model
+//   const user = new User({
+//     firstName: "Prem",
+//     lastName: "Vivek",
+//     emailId: "prem@.com",
+//     password: "iuhjjk",
+//     age: 22,
+//     gender: "male",
+//   });
 
+//   try {
+//     await user.save();
+//     res.send("Data saved successfully");
+//   } catch (err) {
+//     res.status(400).send("Error in signup user:" + err.message);
+//   }
+// });
 
-
-
-app.listen(3000, () => {
-    console.log("Connected Successfully to server");
-});
-
-
+connectDb()
+  .then(() => {
+    console.log("Database connection established");
+    app.listen(3000, () => {
+      console.log("Connected Successfully to server");
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection failed");
+  });
