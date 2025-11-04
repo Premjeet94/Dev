@@ -7,33 +7,27 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
   // creating a new instance for a user model
   const user = new User(req.body);
-    try {
-      await user.save();
-      res.send("Data saved successfully");
-    } catch (err) {
-      res.status(400).send("Error in signup user:" + err.message);
-    }
+  try {
+    await user.save();
+    res.send("Data saved successfully");
+  } catch (err) {
+    res.status(400).send("Error in signup user:" + err.message);
+  }
 });
 
-// Feed API - GET /feed - get all the users from the database
-
-  // creating a new instance for a user model
-//   const user = new User({
-//     firstName: "Prem",
-//     lastName: "Vivek",
-//     emailId: "prem@.com",
-//     password: "iuhjjk",
-//     age: 22,
-//     gender: "male",
-//   });
-
-//   try {
-//     await user.save();
-//     res.send("Data saved successfully");
-//   } catch (err) {
-//     res.status(400).send("Error in signup user:" + err.message);
-//   }
-// });
+// Feed API - Get all the data from db and show it to users
+app.get("/feed", async (req, res) => {
+  try {
+    const allusers = await User.find({});
+    if (allusers.length === 0) {
+      return req.status(404).json({ message: "Data not found" });
+    } else {
+      res.status(200).json(allusers);
+    }
+  } catch (error) {
+    res.status(500).send("Something went wrong");
+  }
+});
 
 connectDb()
   .then(() => {
