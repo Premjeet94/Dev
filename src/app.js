@@ -5,6 +5,7 @@ const User = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
 app.use(express.json());
 const bcrypt = require("bcrypt");
+const validator = require("validator");
 
 app.post("/signup", async (req, res) => {
   try {
@@ -26,6 +27,26 @@ app.post("/signup", async (req, res) => {
     });
     await user.save();
     res.send("Data saved successfully");
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    if (!validator.isEmail(emailId)) {
+      throw new Error("Please enter correct Email Id");
+    }
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("New user please signUp");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) res.send("Login successfull!");
+    else throw new Error("Incorrect Password");
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
