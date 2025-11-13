@@ -32,7 +32,6 @@ const userScheme = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 6,
-      maxLength: 18,
       validate(value) {
         if (!validator.isStrongPassword(value)) {
           throw new Error("Your password is weak: " + value);
@@ -43,7 +42,6 @@ const userScheme = new mongoose.Schema(
       type: Number,
       min: 18,
       max: 50,
-      required: true,
     },
     gender: {
       type: String,
