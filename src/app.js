@@ -29,6 +29,42 @@ app.get("/feed", async (req, res) => {
   }
 });
 
+// Delete API - Delete the user by checking unique _id
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res
+        .status(400)
+        .json({ message: "UserId is incorrect or user not found" });
+    } else {
+      res.status(200).json({ message: "User deleted successfully" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Something Went Wrong");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    if (userId === 0) {
+      return req.status(500).send("Data not found");
+    } else {
+      await User.findByIdAndUpdate(
+        { _id: userId },
+        { returnDocument: "after", runValidators: true }
+      );
+      res.send("User updated successfully");
+    }
+  } catch (error) {
+    res.status(400).send("Something went wrong");
+  }
+});
 connectDb()
   .then(() => {
     console.log("Database connection established");
