@@ -6,7 +6,14 @@ const { validateSignupData } = require("./utils/validation");
 app.use(express.json());
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+const jwt = require("jsonwebtoken");
 
+// {
+//    "emailId": "premjetvie34@gmail.com",
+//    "password": "Prem098@2123"
+// }
 app.post("/signup", async (req, res) => {
   try {
     //Validation of the data
@@ -40,15 +47,53 @@ app.post("/login", async (req, res) => {
     }
     const user = await User.findOne({ emailId: emailId });
     if (!user) {
-      throw new Error("New user please signUp");
+      throw new Error("Invalid Credentials");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (isPasswordValid) res.send("Login successfull!");
-    else throw new Error("Incorrect Password");
+    if (isPasswordValid) {
+      //Create a JWt token
+      const token = await jwt.sign(
+        { _id: user._id },
+        "yddttfuytf878768jhhg868%^^89gxc788ggiud"
+      );
+      console.log(token);
+
+      //Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
+
+      res.send("Login successfull!");
+    } else throw new Error("Invalid CREDENTIALS");
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+
+    const { token } = cookies;
+
+    if (!token) {
+      throw new Error("Invalid Token");
+    }
+    //validating token
+
+    const decodedMessage = await jwt.verify(
+      token,
+      "yddttfuytf878768jhhg868%^^89gxc788ggiud"
+    );
+    const { _id } = decodedMessage;
+    console.log("Logged In user is: " + _id);
+    const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("Please login again");
+    }
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("ERROR " + error.message);
   }
 });
 
